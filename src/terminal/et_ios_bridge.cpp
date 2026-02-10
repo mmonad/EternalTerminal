@@ -28,6 +28,12 @@ extern "C" int et_client_main(FILE *f_in, FILE *f_out, struct winsize *ws,
     keepalive_secs = 5;
   }
 
+  // Prevent easylogging++ from calling abort() on FATAL log messages.
+  // ET's reconnect thread (ClientConnection::pollReconnect) can trigger
+  // FATAL logs when the server-side daemon is gone, which would crash
+  // the entire iOS process.
+  el::Loggers::addFlag(el::LoggingFlag::DisableApplicationAbortOnFatalLog);
+
   try {
     // Create socket handler and endpoint
     auto socketHandler = std::make_shared<TcpSocketHandler>();
